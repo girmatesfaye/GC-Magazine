@@ -1,10 +1,52 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // NOTE: Update this to include the paths to all files that contain Nativewind classes.
-  content: ["./App.tsx", "./components/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+  ],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        background: "#131313",
+        surface: "#131313",
+        "surface-dim": "#131313",
+        "surface-bright": "#393939",
+        "surface-container": "#201f1f",
+        "surface-container-low": "#1c1b1b",
+        "surface-container-lowest": "#0e0e0e",
+        "surface-container-high": "#2a2a2a",
+        "surface-container-highest": "#353534",
+        "surface-variant": "#353534",
+        primary: "#fff6df",
+        "primary-container": "#ffd700",
+        "on-primary": "#3a3000",
+        "on-primary-container": "#705e00",
+        "on-primary-fixed": "#221b00",
+        "on-surface": "#e5e2e1",
+        "on-surface-variant": "#d0c6ab",
+        "on-background": "#e5e2e1",
+        secondary: "#e9c176",
+        "secondary-container": "#604403",
+        "secondary-fixed-dim": "#e9c176",
+        outline: "#999077",
+        "outline-variant": "#4d4732",
+        tertiary: "#defcff",
+        error: "#ffb4ab",
+      },
+      borderRadius: {
+        md: "1rem",
+        lg: "2rem",
+        xl: "3rem",
+        full: "9999px",
+      },
+      fontFamily: {
+        headline: ["PlusJakartaSans_700Bold"],
+        "headline-semibold": ["PlusJakartaSans_600SemiBold"],
+        body: ["Inter_400Regular"],
+        label: ["Inter_500Medium"],
+      },
+    },
   },
   plugins: [],
 };
