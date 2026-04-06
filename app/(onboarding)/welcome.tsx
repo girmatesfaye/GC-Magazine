@@ -40,7 +40,10 @@ export default function WelcomeScreen() {
             label="Get Started"
             onPress={() => router.replace("/capture")}
           />
-          <SecondaryButton label="Login" onPress={() => router.replace("/home")} />
+          <SecondaryButton
+            label="I Already Have Access"
+            onPress={() => router.replace("/home")}
+          />
         </View>
         <View className="mt-8 items-center">
           <View className="h-1 w-[33%] rounded-full bg-outline-variant/30" />
