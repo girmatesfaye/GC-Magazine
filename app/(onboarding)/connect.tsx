@@ -41,7 +41,8 @@ export default function OnboardingConnectScreen() {
         </Pressable>
       </View>
       <ScrollView
-        className="z-10 flex-1 px-6 pb-32 pt-8"
+        className="z-10 flex-1 px-6 pt-8"
+        contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mb-8 flex-row gap-3">
@@ -76,13 +77,19 @@ export default function OnboardingConnectScreen() {
             </View>
           ))}
         </View>
+      </ScrollView>
+      <View className="z-10 border-t border-outline-variant/20 bg-surface/80 px-6 pb-6 pt-4">
+        <View className="mb-4 flex-row items-center justify-center gap-2">
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+          <View className="h-1 w-12 rounded-full bg-primary-container" />
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+        </View>
         <PrimaryButton
           label="Next"
           onPress={() => router.replace("/archive")}
-          fullWidth={false}
-          className="mt-12 self-end"
+          rightIcon="arrow-forward"
         />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

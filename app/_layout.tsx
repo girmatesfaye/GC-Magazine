@@ -40,10 +40,16 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#131313" } }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "#131313" },
+        }}
+      >
         <Stack.Screen name="index" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="user-setup" />
+        <Stack.Screen name="login" />
         <Stack.Screen name="(main)" />
       </Stack>
     </SafeAreaProvider>

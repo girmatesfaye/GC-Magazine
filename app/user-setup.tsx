@@ -27,15 +27,31 @@ export default function UserSetupScreen() {
   const [university, setUniversity] = useState("");
   const [department, setDepartment] = useState(DEPTS[0]);
   const [year, setYear] = useState("2024");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
+      <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
+        <Pressable onPress={() => router.replace("/archive")} hitSlop={12}>
+          <Ionicons name="arrow-back" size={24} color="#ffd700" />
+        </Pressable>
+        <Text className="font-headline text-base font-black italic tracking-tighter text-primary-container">
+          The Keepsake
+        </Text>
+        <Pressable onPress={() => router.replace("/login")}>
+          <Text className="font-headline font-bold text-primary-container">
+            Skip
+          </Text>
+        </Pressable>
+      </View>
       <KeyboardAvoidingView
         className="flex-1 bg-surface"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          className="flex-1 px-6 py-12"
+          className="flex-1 px-6 pt-8"
+          contentContainerClassName="pb-40"
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled"
         >
@@ -45,8 +61,8 @@ export default function UserSetupScreen() {
               <Text className="text-primary-container">Digital Keepsake</Text>
             </Text>
             <Text className="mt-4 max-w-md font-body text-lg text-on-surface-variant">
-              Complete your profile to begin archiving your graduation journey and
-              connecting with your batch.
+              Complete your profile to begin archiving your graduation journey
+              and connecting with your batch.
             </Text>
           </View>
           <View className="gap-6">
@@ -120,13 +136,57 @@ export default function UserSetupScreen() {
                 className="rounded-lg bg-surface-container-low px-6 py-5 font-body text-base text-on-surface"
               />
             </View>
+            <View>
+              <Text className="mb-2 px-1 font-label text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
+                Email
+              </Text>
+              <View className="relative">
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@university.edu"
+                  placeholderTextColor="#d0c6ab66"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className="rounded-lg bg-surface-container-low px-6 py-5 font-body text-base text-on-surface"
+                />
+                <View className="absolute right-6 top-1/2 -translate-y-1/2">
+                  <Ionicons name="mail-outline" size={22} color="#d0c6ab55" />
+                </View>
+              </View>
+            </View>
+            <View>
+              <Text className="mb-2 px-1 font-label text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
+                Password
+              </Text>
+              <View className="relative">
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Create a strong password"
+                  placeholderTextColor="#d0c6ab66"
+                  autoCapitalize="none"
+                  secureTextEntry
+                  className="rounded-lg bg-surface-container-low px-6 py-5 font-body text-base text-on-surface"
+                />
+                <View className="absolute right-6 top-1/2 -translate-y-1/2">
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={22}
+                    color="#d0c6ab55"
+                  />
+                </View>
+              </View>
+            </View>
           </View>
-          <PrimaryButton
-            label="Enter the Archive"
-            onPress={() => router.replace("/home")}
-            className="mt-10"
-          />
         </ScrollView>
+        <View className="border-t border-outline-variant/20 bg-surface/90 px-6 pb-6 pt-4">
+          <PrimaryButton
+            label="Continue to Login"
+            onPress={() => router.replace("/login")}
+            rightIcon="arrow-forward"
+          />
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/primary-button";
@@ -8,8 +8,22 @@ import { PrimaryButton } from "@/components/primary-button";
 export default function OnboardingArchiveScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
+      <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
+        <Pressable onPress={() => router.replace("/connect")} hitSlop={12}>
+          <Ionicons name="arrow-back" size={24} color="#ffd700" />
+        </Pressable>
+        <Text className="font-headline text-base font-black italic tracking-tighter text-primary-container">
+          The Keepsake
+        </Text>
+        <Pressable onPress={() => router.replace("/user-setup")}>
+          <Text className="font-headline font-bold text-primary-container">
+            Skip
+          </Text>
+        </Pressable>
+      </View>
       <ScrollView
-        className="flex-1 px-8 pb-24 pt-16"
+        className="flex-1 px-8 pt-8"
+        contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mb-10 items-center">
@@ -23,21 +37,23 @@ export default function OnboardingArchiveScreen() {
             A Digital Time Capsule
           </Text>
           <Text className="mt-4 max-w-lg text-center font-body text-lg font-light leading-relaxed text-on-surface-variant">
-            Your graduation isn&apos;t just a day, it&apos;s a milestone. Archive it
-            forever in your personal vault.
+            Your graduation isn&apos;t just a day, it&apos;s a milestone.
+            Archive it forever in your personal vault.
           </Text>
         </View>
-        <PrimaryButton
-          label="Get Started"
-          onPress={() => router.replace("/user-setup")}
-        />
-        <View className="mt-8 flex-row justify-center gap-2">
-          <View className="h-1.5 w-1.5 rounded-full bg-outline-variant/30" />
-          <View className="h-1.5 w-1.5 rounded-full bg-outline-variant/30" />
-          <View className="h-1.5 w-1.5 rounded-full bg-outline-variant/30" />
-          <View className="h-6 w-1.5 rounded-full bg-primary-container" />
-        </View>
       </ScrollView>
+      <View className="z-10 border-t border-outline-variant/20 bg-surface/80 px-6 pb-6 pt-4">
+        <View className="mb-4 flex-row items-center justify-center gap-2">
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+          <View className="h-1 w-12 rounded-full bg-primary-container" />
+        </View>
+        <PrimaryButton
+          label="Next"
+          onPress={() => router.replace("/user-setup")}
+          rightIcon="arrow-forward"
+        />
+      </View>
     </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/primary-button";
@@ -22,8 +22,22 @@ export default function OnboardingCaptureScreen() {
         />
         <View className="absolute inset-0 bg-surface/70" />
       </View>
+      <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
+        <Pressable onPress={() => router.replace("/welcome")} hitSlop={12}>
+          <Ionicons name="arrow-back" size={24} color="#ffd700" />
+        </Pressable>
+        <Text className="font-headline text-base font-black italic tracking-tighter text-primary-container">
+          The Keepsake
+        </Text>
+        <Pressable onPress={() => router.replace("/user-setup")}>
+          <Text className="font-headline font-bold text-primary-container">
+            Skip
+          </Text>
+        </Pressable>
+      </View>
       <ScrollView
-        className="flex-1 px-8 pb-24 pt-14"
+        className="z-10 flex-1 px-8 pt-8"
+        contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
         <Text className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary-fixed-dim">
@@ -34,8 +48,8 @@ export default function OnboardingCaptureScreen() {
           <Text className="italic text-primary-container">Emotion</Text>
         </Text>
         <Text className="mt-4 max-w-xl font-body text-lg leading-relaxed text-on-surface-variant">
-          Save the cheers, the tears, and the laughs with high-fidelity photo and
-          voice memories. Every second of your legacy, preserved in gold.
+          Save the cheers, the tears, and the laughs with high-fidelity photo
+          and voice memories. Every second of your legacy, preserved in gold.
         </Text>
         <View className="mt-6 flex-row gap-4">
           <View className="flex-1 flex-row items-center gap-3 rounded-lg bg-surface-container-high/60 p-4">
@@ -65,20 +79,19 @@ export default function OnboardingCaptureScreen() {
             </View>
           </View>
         </View>
-        <View className="mt-10 flex-row items-center justify-between">
-          <View className="flex-row gap-2">
-            <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
-            <View className="h-1 w-12 rounded-full bg-primary-container" />
-            <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
-          </View>
-          <PrimaryButton
-            label="Next"
-            onPress={() => router.replace("/connect")}
-            rightIcon="arrow-forward"
-            fullWidth={false}
-          />
-        </View>
       </ScrollView>
+      <View className="z-10 border-t border-outline-variant/20 bg-surface/80 px-6 pb-6 pt-4">
+        <View className="mb-4 flex-row items-center justify-center gap-2">
+          <View className="h-1 w-12 rounded-full bg-primary-container" />
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+          <View className="h-1 w-8 rounded-full bg-surface-container-highest" />
+        </View>
+        <PrimaryButton
+          label="Next"
+          onPress={() => router.replace("/connect")}
+          rightIcon="arrow-forward"
+        />
+      </View>
     </SafeAreaView>
   );
 }

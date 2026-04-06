@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
           />
           <SecondaryButton
             label="I Already Have Access"
-            onPress={() => router.replace("/home")}
+            onPress={() => router.replace("/login")}
           />
         </View>
         <View className="mt-8 items-center">
