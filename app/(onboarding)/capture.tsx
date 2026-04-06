@@ -2,17 +2,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/primary-button";
 
 const BG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDkocZ3o_yTYzT2BLJIRjActGvQxZl_RHurn3apPsWECsQZ4exlWlKdjdHOa18Wx7HpDQjYmLbeAvovCBSGKRbNc8k6Cy_lQMs35w9XzoqN7NoenAbslKwC88b-qMHnsyVIrvIR27c9wIzcYSQWMtgdVRn8ijnoDoic2NXdBQ-Nr0sS0tTzh1QFwTMFR_vZJ2DECmzIgtUaDzC3nC_R3czwHQj5Q9X4uXdXPfjRbj4PEUL_YQnOdpb2qqPuO6zv3cbY0t_oNnDoUizg";
+const STITCH_PLACEHOLDER = require("../../assets/stitch/onboarding-capture.png");
 
 export default function OnboardingCaptureScreen() {
   return (
-    <View className="flex-1 bg-surface">
+    <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
       <View className="absolute inset-0">
-        <Image source={{ uri: BG }} className="h-full w-full opacity-90" contentFit="cover" />
+        <Image
+          source={{ uri: BG }}
+          placeholder={STITCH_PLACEHOLDER}
+          className="h-full w-full opacity-90"
+          contentFit="cover"
+        />
         <View className="absolute inset-0 bg-surface/70" />
       </View>
       <ScrollView
@@ -66,12 +73,12 @@ export default function OnboardingCaptureScreen() {
           </View>
           <PrimaryButton
             label="Next"
-            onPress={() => router.push("/connect")}
+            onPress={() => router.replace("/connect")}
             rightIcon="arrow-forward"
             fullWidth={false}
           />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

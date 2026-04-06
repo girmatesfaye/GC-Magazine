@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/primary-button";
 
 export default function OnboardingArchiveScreen() {
   return (
-    <View className="flex-1 bg-surface">
+    <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
       <ScrollView
         className="flex-1 px-8 pb-24 pt-16"
         contentInsetAdjustmentBehavior="automatic"
@@ -28,7 +29,7 @@ export default function OnboardingArchiveScreen() {
         </View>
         <PrimaryButton
           label="Get Started"
-          onPress={() => router.push("/user-setup")}
+          onPress={() => router.replace("/user-setup")}
         />
         <View className="mt-8 flex-row justify-center gap-2">
           <View className="h-1.5 w-1.5 rounded-full bg-outline-variant/30" />
@@ -37,6 +38,6 @@ export default function OnboardingArchiveScreen() {
           <View className="h-6 w-1.5 rounded-full bg-primary-container" />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
