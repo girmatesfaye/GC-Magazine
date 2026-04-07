@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Pressable, Text, View } from "react-native";
+import { GestureResponderEvent, Pressable, Text, View } from "react-native";
 
 import type { Memory } from "@/types/memory";
 
@@ -10,9 +10,22 @@ type Props = {
   memory: Memory;
   onPress?: () => void;
   variant?: "feed" | "profile";
+  showDelete?: boolean;
+  onDelete?: (id: string) => void;
 };
 
-export function MemoryCard({ memory, onPress, variant = "feed" }: Props) {
+export function MemoryCard({
+  memory,
+  onPress,
+  variant = "feed",
+  showDelete = false,
+  onDelete,
+}: Props) {
+  const handleDelete = (e: GestureResponderEvent) => {
+    e.stopPropagation();
+    onDelete?.(memory.id);
+  };
+
   return (
     <Pressable
       accessibilityRole={onPress ? "button" : undefined}
@@ -45,9 +58,10 @@ export function MemoryCard({ memory, onPress, variant = "feed" }: Props) {
         }`}
         style={{ aspectRatio: 4 / 5 }}
       >
-        {variant === "profile" ? (
+        {variant === "profile" || showDelete ? (
           <Pressable
             accessibilityLabel="Delete memory"
+            onPress={handleDelete}
             className="absolute right-4 top-4 z-10 rounded-full bg-surface-container-lowest/40 p-2"
           >
             <Ionicons name="trash-outline" size={18} color="#d0c6ab" />

@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { FeedHeader } from "@/components/feed-header";
@@ -11,14 +12,34 @@ const AVATAR =
 const FILTERS = ["All", "My University", "My Department", "My Batch"] as const;
 
 export default function HomeFeedScreen() {
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [memories, setMemories] = useState(MOCK_MEMORIES);
+
+  const handleDeleteMemory = (id: string) => {
+    setMemories((prev) => prev.filter((m) => m.id !== id));
+  };
+
   return (
     <View className="flex-1 bg-surface">
-      <FeedHeader avatarUri={AVATAR} />
+      <FeedHeader
+        avatarUri={AVATAR}
+        isAdminMode={isAdminMode}
+        onAvatarPress={() => router.push("/admin" as never)}
+        onAvatarLongPress={() => setIsAdminMode((v) => !v)}
+      />
       <ScrollView
         className="flex-1 px-4 pt-4"
         contentContainerClassName="pb-32"
         contentInsetAdjustmentBehavior="automatic"
       >
+        {isAdminMode ? (
+          <View className="mb-4 rounded-xl border border-error/30 bg-error/10 px-4 py-3">
+            <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-error">
+              Admin mode enabled: tap trash icon on any post to delete it from
+              feed.
+            </Text>
+          </View>
+        ) : null}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -38,10 +59,12 @@ export default function HomeFeedScreen() {
             </Pressable>
           ))}
         </ScrollView>
-        {MOCK_MEMORIES.map((m) => (
+        {memories.map((m) => (
           <MemoryCard
             key={m.id}
             memory={m}
+            showDelete={isAdminMode}
+            onDelete={handleDeleteMemory}
             onPress={() =>
               router.push({ pathname: "/memory/[id]", params: { id: m.id } })
             }
