@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { OnboardingBackground } from "@/components/onboarding-background";
 import { PrimaryButton } from "@/components/primary-button";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -15,11 +16,8 @@ const PEERS = [
 
 export default function OnboardingConnectScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
-      <View className="absolute inset-0 z-0">
-        <Image source={BG} className="h-full w-full" contentFit="cover" />
-        <View className="absolute inset-0 bg-surface/50" />
-      </View>
+    <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
+      <OnboardingBackground source={BG} overlayOpacity={0.25} />
       <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Ionicons name="arrow-back" size={24} color="#ffd700" />
@@ -38,11 +36,21 @@ export default function OnboardingConnectScreen() {
         contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
-        <Text className="font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-primary">
+        <Text
+          className="font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-primary"
+          style={{
+            textShadowColor: "rgba(0, 0, 0, 0.75)",
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 10,
+          }}
+        >
           Celebrate{"\n"}
           <Text className="text-primary-container">Together</Text>
         </Text>
-        <Text className="mt-4 max-w-md font-body text-lg font-light leading-relaxed text-on-surface-variant">
+        <Text
+          className="mt-4 max-w-md font-body text-lg font-light leading-relaxed text-primary"
+          style={{ opacity: 0.9 }}
+        >
           Stay connected with your batch and department. Relive your shared
           journey through their eyes.
         </Text>

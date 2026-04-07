@@ -1,24 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { OnboardingBackground } from "@/components/onboarding-background";
 import { PrimaryButton } from "@/components/primary-button";
 
 const BG = require("../../assets/images/Capture-screen.png");
 
 export default function OnboardingCaptureScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
-      <View className="absolute inset-0">
-        <Image
-          source={BG}
-          className="h-full w-full opacity-90"
-          contentFit="cover"
-        />
-        <View className="absolute inset-0 bg-surface/70" />
-      </View>
+    <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
+      <OnboardingBackground source={BG} overlayOpacity={0.25} />
       <View className="z-10 flex-row items-center justify-end bg-surface/60 px-6 py-4 border-b border-outline-variant/20">
         {/* <Pressable onPress={() => router.push("/welcome")} hitSlop={12}>
           <Ionicons name="arrow-back" size={24} color="#ffd700" />
@@ -37,11 +30,21 @@ export default function OnboardingCaptureScreen() {
         contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
-        <Text className="mt-2 font-headline text-5xl font-extrabold leading-[0.95] tracking-tighter text-primary">
+        <Text
+          className="mt-2 font-headline text-5xl font-extrabold leading-[0.95] tracking-tighter text-primary"
+          style={{
+            textShadowColor: "rgba(0, 0, 0, 0.75)",
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 10,
+          }}
+        >
           Capture Every{" "}
           <Text className="italic text-primary-container">Emotion</Text>
         </Text>
-        <Text className="mt-4 max-w-xl font-body text-lg leading-relaxed text-on-surface-variant">
+        <Text
+          className="mt-4 max-w-xl font-body text-lg leading-relaxed text-primary"
+          style={{ opacity: 0.9 }}
+        >
           Save the cheers, the tears, and the laughs with high-fidelity photo
           and voice memories. Every second of your legacy, preserved in gold.
         </Text>

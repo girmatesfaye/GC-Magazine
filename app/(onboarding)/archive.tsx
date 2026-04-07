@@ -1,20 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { OnboardingBackground } from "@/components/onboarding-background";
 import { PrimaryButton } from "@/components/primary-button";
 
 const BG = require("../../assets/images/Archive-screen.png");
 
 export default function OnboardingArchiveScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
-      <View className="absolute inset-0">
-        <Image source={BG} className="h-full w-full" contentFit="cover" />
-        <View className="absolute inset-0 bg-surface/75" />
-      </View>
+    <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
+      <OnboardingBackground source={BG} overlayOpacity={0.3} />
       <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Ionicons name="arrow-back" size={24} color="#ffd700" />
@@ -26,7 +23,7 @@ export default function OnboardingArchiveScreen() {
         </Pressable>
       </View>
       <ScrollView
-        className="flex-1 px-8 pt-8"
+        className="z-10 flex-1 px-8 pt-8"
         contentContainerClassName="pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
@@ -37,10 +34,20 @@ export default function OnboardingArchiveScreen() {
           <Text className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">
             Archive Forever
           </Text>
-          <Text className="mt-2 text-center font-headline text-5xl font-extrabold tracking-tight text-primary-container">
+          <Text
+            className="mt-2 text-center font-headline text-5xl font-extrabold tracking-tight text-primary-container"
+            style={{
+              textShadowColor: "rgba(0, 0, 0, 0.75)",
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 10,
+            }}
+          >
             A Digital Time Capsule
           </Text>
-          <Text className="mt-4 max-w-lg text-center font-body text-lg font-light leading-relaxed text-on-surface-variant">
+          <Text
+            className="mt-4 max-w-lg text-center font-body text-lg font-light leading-relaxed text-primary"
+            style={{ opacity: 0.9 }}
+          >
             Your graduation isn&apos;t just a day, it&apos;s a milestone.
             Archive it forever in your personal vault.
           </Text>
