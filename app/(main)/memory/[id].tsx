@@ -1,15 +1,56 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { SecondaryButton } from "@/components/secondary-button";
 import { TagChip } from "@/components/tag-chip";
 import { getMemoryById } from "@/constants/mock-memories";
+import { fetchMemoryById } from "@/lib/memories";
+import type { Memory } from "@/types/memory";
 
 export default function MemoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const memory = getMemoryById(id ?? "");
+  const [memory, setMemory] = useState<Memory | undefined>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMemory = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      const nextMemory = await fetchMemoryById(id);
+
+      if (!isMounted) {
+        return;
+      }
+
+      setMemory(nextMemory ?? getMemoryById(id));
+      setLoading(false);
+    };
+
+    loadMemory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface px-6">
+        <Text className="text-center font-body text-on-surface-variant">
+          Loading memory...
+        </Text>
+      </View>
+    );
+  }
 
   if (!memory) {
     return (

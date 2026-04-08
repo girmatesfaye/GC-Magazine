@@ -6,7 +6,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -22,19 +21,11 @@ import { supabase } from "@/lib/supabase";
 
 const BG = require("../assets/stitch/user-setup.png");
 
-const DEPTS = [
-  "Software Engineering",
-  "Business Administration",
-  "Architecture & Design",
-  "Liberal Arts",
-  "Applied Sciences",
-];
-
 export default function UserSetupScreen() {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [university, setUniversity] = useState("");
-  const [department, setDepartment] = useState(DEPTS[0]);
+  const [department, setDepartment] = useState("");
   const [year, setYear] = useState("2024");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,7 +69,7 @@ export default function UserSetupScreen() {
 
     Alert.alert(
       "Check your email",
-      "We sent a confirmation link. Verify your email, then sign in."
+      "We sent a confirmation link. Verify your email, then sign in.",
     );
     router.replace("/login");
   };
@@ -164,24 +155,22 @@ export default function UserSetupScreen() {
               <Text className="mb-2 px-1 font-label text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
                 Department
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View className="flex-row flex-wrap gap-2">
-                  {DEPTS.map((d) => (
-                    <Pressable
-                      key={d}
-                      onPress={() => setDepartment(d)}
-                      className={`rounded-full px-4 py-2 ${department === d ? "bg-primary-container" : "bg-surface-container-low"}`}
-                    >
-                      <Text
-                        className={`font-label text-xs ${department === d ? "text-on-primary-container" : "text-on-surface-variant"}`}
-                        numberOfLines={1}
-                      >
-                        {d}
-                      </Text>
-                    </Pressable>
-                  ))}
+              <View className="relative">
+                <TextInput
+                  value={department}
+                  onChangeText={setDepartment}
+                  placeholder="Enter Department Name"
+                  placeholderTextColor="#d0c6ab66"
+                  className="rounded-lg bg-surface-container-low px-6 py-5 font-body text-base text-on-surface"
+                />
+                <View className="absolute right-6 top-1/2 -translate-y-1/2">
+                  <Ionicons
+                    name="business-outline"
+                    size={22}
+                    color="#d0c6ab55"
+                  />
                 </View>
-              </ScrollView>
+              </View>
             </View>
             <View>
               <Text className="mb-2 px-1 font-label text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">

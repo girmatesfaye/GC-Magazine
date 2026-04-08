@@ -1,10 +1,12 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { FeedHeader } from "@/components/feed-header";
 import { MemoryCard } from "@/components/memory-card";
 import { MOCK_MEMORIES } from "@/constants/mock-memories";
+import { fetchMemories } from "@/lib/memories";
+import type { Memory } from "@/types/memory";
 
 const AVATAR =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDigwncOBpv2TXfewZ5ZQuJATfKG2H0vfcY5AzyUY2SmhrK72YjKvnNn3dTRKb79BPr100UkJEBb1-CLhQwi7bQTw2M2jGVH-1gErJP3W2GvT1oeWTSZxLoCiZ1Z74Ef6y8Incvc0M0hM86RyHCDLSafFCW991BKHCrVao7FjOsKbyIWPLFrGI-m0tVFby1TK0x7GpDAxqq1TgRt-qqZdo3fjWNGVCuWckcLk-iybxqGS7h99Fjfaoh5ZxyR9KpGCPGQXr_pp9n0SJh";
@@ -13,7 +15,32 @@ const FILTERS = ["All", "My University", "My Department", "My Batch"] as const;
 
 export default function HomeFeedScreen() {
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [memories, setMemories] = useState(MOCK_MEMORIES);
+  const [memories, setMemories] = useState<Memory[]>(MOCK_MEMORIES);
+  const [loading, setLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMemories = async () => {
+      setLoading(true);
+      const nextMemories = await fetchMemories();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setMemories(nextMemories);
+      setUsingFallback(nextMemories === MOCK_MEMORIES);
+      setLoading(false);
+    };
+
+    loadMemories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleDeleteMemory = (id: string) => {
     setMemories((prev) => prev.filter((m) => m.id !== id));
@@ -32,6 +59,20 @@ export default function HomeFeedScreen() {
         contentContainerClassName="pb-32"
         contentInsetAdjustmentBehavior="automatic"
       >
+        {loading ? (
+          <View className="mb-4 rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-3">
+            <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+              Loading memories from Supabase...
+            </Text>
+          </View>
+        ) : null}
+        {!loading && usingFallback ? (
+          <View className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3">
+            <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-secondary">
+              Supabase unavailable, showing mock feed fallback.
+            </Text>
+          </View>
+        ) : null}
         {isAdminMode ? (
           <View className="mb-4 rounded-xl border border-error/30 bg-error/10 px-4 py-3">
             <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-error">
