@@ -240,6 +240,12 @@ export default function UserSetupScreen() {
             disabled={loading}
           />
         </View>
+        <Text
+          className="font-label text-sm font-bold text-primary-container"
+          onPress={() => router.push("/login")}
+        >
+          Sign In
+        </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
