@@ -14,4 +14,5 @@ export type Memory = {
   hasVoice?: boolean;
   voiceLabel?: string;
   voiceDuration?: string;
+  createdAt?: string;
 };

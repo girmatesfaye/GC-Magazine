@@ -6,7 +6,6 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { SecondaryButton } from "@/components/secondary-button";
 import { TagChip } from "@/components/tag-chip";
-import { getMemoryById } from "@/constants/mock-memories";
 import { fetchMemoryById } from "@/lib/memories";
 import type { Memory } from "@/types/memory";
 
@@ -14,6 +13,7 @@ export default function MemoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [memory, setMemory] = useState<Memory | undefined>();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,13 +25,31 @@ export default function MemoryDetailScreen() {
       }
 
       setLoading(true);
-      const nextMemory = await fetchMemoryById(id);
+      setLoadError(null);
+
+      let nextMemory: Memory | undefined;
+      try {
+        nextMemory = await fetchMemoryById(id);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Could not load this memory from Supabase.";
+        setLoadError(message);
+        setMemory(undefined);
+        setLoading(false);
+        return;
+      }
 
       if (!isMounted) {
         return;
       }
 
-      setMemory(nextMemory ?? getMemoryById(id));
+      setMemory(nextMemory);
       setLoading(false);
     };
 
@@ -56,7 +74,7 @@ export default function MemoryDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-surface px-6">
         <Text className="mb-4 text-center font-body text-on-surface-variant">
-          Memory not found.
+          {loadError ?? "Memory not found."}
         </Text>
         <SecondaryButton
           label="Go back"
@@ -155,7 +173,7 @@ export default function MemoryDetailScreen() {
                   <Ionicons name="heart" size={26} color="#ffb4ab" />
                 </View>
                 <Text className="font-label text-[11px] font-bold uppercase tracking-tighter text-on-surface-variant">
-                  1,204 Likes
+                  {memory.likesCount ?? "0"} Likes
                 </Text>
               </View>
               <View className="items-center gap-1">

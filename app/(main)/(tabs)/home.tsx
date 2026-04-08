@@ -4,7 +4,6 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 import { FeedHeader } from "@/components/feed-header";
 import { MemoryCard } from "@/components/memory-card";
-import { MOCK_MEMORIES } from "@/constants/mock-memories";
 import { fetchMemories } from "@/lib/memories";
 import { fetchCurrentProfile } from "@/lib/profiles";
 import { supabase } from "@/lib/supabase";
@@ -18,9 +17,10 @@ const FILTERS = ["All", "My University", "My Department", "My Batch"] as const;
 export default function HomeFeedScreen() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
-  const [memories, setMemories] = useState<Memory[]>(MOCK_MEMORIES);
+  const [avatarUri, setAvatarUri] = useState(AVATAR);
+  const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingFallback, setUsingFallback] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -30,8 +30,9 @@ export default function HomeFeedScreen() {
     const loadMemories = async () => {
       setLoading(true);
       setDeleteError(null);
+      setLoadError(null);
 
-      const [nextMemories, currentProfile] = await Promise.all([
+      const [memoriesResult, profileResult] = await Promise.allSettled([
         fetchMemories(),
         fetchCurrentProfile(),
       ]);
@@ -40,9 +41,32 @@ export default function HomeFeedScreen() {
         return;
       }
 
-      setMemories(nextMemories);
-      setUsingFallback(nextMemories === MOCK_MEMORIES);
-      setIsAdminUser(currentProfile?.is_admin ?? false);
+      if (memoriesResult.status === "fulfilled") {
+        setMemories(memoriesResult.value);
+      } else {
+        setMemories([]);
+        const message =
+          memoriesResult.reason instanceof Error
+            ? memoriesResult.reason.message
+            : "Could not load memories from Supabase.";
+        setLoadError(message);
+      }
+
+      if (profileResult.status === "fulfilled") {
+        const profile = profileResult.value;
+        const safeName = profile?.full_name?.trim();
+        setIsAdminUser(profile?.is_admin ?? false);
+        setAvatarUri(
+          profile?.avatar_url ??
+            (safeName
+              ? `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(safeName)}`
+              : AVATAR),
+        );
+      } else {
+        setIsAdminUser(false);
+        setAvatarUri(AVATAR);
+      }
+
       setIsAdminMode(false);
       setLoading(false);
     };
@@ -55,17 +79,6 @@ export default function HomeFeedScreen() {
   }, []);
 
   const handleDeleteMemory = async (id: string) => {
-    if (usingFallback) {
-      setDeleteError(
-        "Delete is disabled while the feed is using local fallback data.",
-      );
-      Alert.alert(
-        "Fallback feed",
-        "Connect to Supabase data before moderating posts.",
-      );
-      return;
-    }
-
     setDeletingId(id);
     setDeleteError(null);
 
@@ -85,12 +98,12 @@ export default function HomeFeedScreen() {
     setMemories((prev) => prev.filter((m) => m.id !== id));
   };
 
-  const canModerate = isAdminUser && !usingFallback;
+  const canModerate = isAdminUser;
 
   return (
     <View className="flex-1 bg-surface">
       <FeedHeader
-        avatarUri={AVATAR}
+        avatarUri={avatarUri}
         isAdminMode={isAdminMode}
         onAvatarPress={() =>
           router.push((isAdminUser ? "/admin" : "/profile") as never)
@@ -118,10 +131,10 @@ export default function HomeFeedScreen() {
             </Text>
           </View>
         ) : null}
-        {!loading && usingFallback ? (
-          <View className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3">
-            <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-secondary">
-              Supabase unavailable, showing mock feed fallback.
+        {loadError ? (
+          <View className="mb-4 rounded-xl border border-error/30 bg-error/10 px-4 py-3">
+            <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-error">
+              {loadError}
             </Text>
           </View>
         ) : null}
@@ -158,6 +171,13 @@ export default function HomeFeedScreen() {
             </Pressable>
           ))}
         </ScrollView>
+        {!loading && memories.length === 0 ? (
+          <View className="mb-4 rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-4">
+            <Text className="text-center font-body text-on-surface-variant">
+              No memories found yet. Share the first memory to start the feed.
+            </Text>
+          </View>
+        ) : null}
         {memories.map((m) => (
           <MemoryCard
             key={m.id}

@@ -1,9 +1,9 @@
-import { MOCK_MEMORIES, getMemoryById } from "@/constants/mock-memories";
 import { supabase } from "@/lib/supabase";
 import type { Memory } from "@/types/memory";
 
 type SupabaseMemoryRow = {
   id: string;
+  user_id: string;
   title: string | null;
   quote: string;
   reflection: string | null;
@@ -29,6 +29,27 @@ type SupabaseMemoryRow = {
       }>
     | null;
 };
+
+const MEMORY_SELECT = `
+  id,
+  user_id,
+  title,
+  quote,
+  reflection,
+  image_url,
+  voice_url,
+  voice_label,
+  voice_duration,
+  tags,
+  likes_count,
+  created_at,
+  profiles (
+    full_name,
+    university,
+    department,
+    avatar_url
+  )
+`;
 
 function buildMemoryFromRow(row: SupabaseMemoryRow): Memory {
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
@@ -56,75 +77,56 @@ function buildMemoryFromRow(row: SupabaseMemoryRow): Memory {
     hasVoice: Boolean(row.voice_url),
     voiceLabel: row.voice_label ?? undefined,
     voiceDuration: row.voice_duration ?? undefined,
+    createdAt: row.created_at,
   };
 }
 
 export async function fetchMemories(): Promise<Memory[]> {
   const { data, error } = await supabase
     .from("memories")
-    .select(
-      `
-        id,
-        title,
-        quote,
-        reflection,
-        image_url,
-        voice_url,
-        voice_label,
-        voice_duration,
-        tags,
-        likes_count,
-        created_at,
-        profiles (
-          full_name,
-          university,
-          department,
-          avatar_url
-        )
-      `,
-    )
+    .select(MEMORY_SELECT)
     .order("created_at", { ascending: false });
 
-  if (error || !data) {
-    return MOCK_MEMORIES;
+  if (error) {
+    throw new Error(error.message || "Could not load memories from Supabase.");
   }
 
-  if (data.length === 0) {
-    return MOCK_MEMORIES;
+  return ((data ?? []) as unknown as SupabaseMemoryRow[]).map(buildMemoryFromRow);
+}
+
+export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
+  const { data, error } = await supabase
+    .from("memories")
+    .select(MEMORY_SELECT)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(
+      error.message || "Could not load your memories from Supabase.",
+    );
   }
 
-  return (data as unknown as SupabaseMemoryRow[]).map(buildMemoryFromRow);
+  return ((data ?? []) as unknown as SupabaseMemoryRow[]).map(buildMemoryFromRow);
 }
 
 export async function fetchMemoryById(id: string): Promise<Memory | undefined> {
   const { data, error } = await supabase
     .from("memories")
-    .select(
-      `
-        id,
-        title,
-        quote,
-        reflection,
-        image_url,
-        voice_url,
-        voice_label,
-        voice_duration,
-        tags,
-        likes_count,
-        created_at,
-        profiles (
-          full_name,
-          university,
-          department,
-          avatar_url
-        )
-      `,
-    )
+    .select(MEMORY_SELECT)
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !data) {
-    return getMemoryById(id);
+  if (error) {
+    if (error.code === "PGRST116") {
+      return undefined;
+    }
+
+    throw new Error(error.message || "Could not load the selected memory.");
+  }
+
+  if (!data) {
+    return undefined;
   }
 
   return buildMemoryFromRow(data as unknown as SupabaseMemoryRow);

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -58,7 +58,12 @@ function formatDuration(ms: number) {
 async function normalizeAssetUri(uri: string, extensionFallback: string) {
   const safeExtension =
     uri.split(".").pop()?.split("?")[0]?.split("#")[0] || extensionFallback;
-  const destination = `${FileSystem.Paths.cache.uri}gradecho-${Date.now()}.${safeExtension}`;
+  const cacheDirectory = FileSystem.cacheDirectory;
+  if (!cacheDirectory) {
+    return uri;
+  }
+
+  const destination = `${cacheDirectory}gradecho-${Date.now()}.${safeExtension}`;
 
   await FileSystem.copyAsync({
     from: uri,
@@ -297,7 +302,7 @@ export default function CreateMemoryScreen() {
           encodedVoice = await FileSystem.readAsStringAsync(
             normalizedVoiceUri,
             {
-              encoding: "base64",
+              encoding: FileSystem.EncodingType.Base64,
             },
           );
         } catch {

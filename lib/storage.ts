@@ -1,13 +1,22 @@
 import { decode } from "base64-arraybuffer";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 import { supabase } from "@/lib/supabase";
 
 const MEMORY_MEDIA_BUCKET = "memory-media";
 
 async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
+  try {
+    const response = await fetch(uri);
+    if (response.ok) {
+      return response.arrayBuffer();
+    }
+  } catch {
+    // Fall back to reading from the local filesystem.
+  }
+
   const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: "base64",
+    encoding: FileSystem.EncodingType.Base64,
   });
 
   return decode(base64);
