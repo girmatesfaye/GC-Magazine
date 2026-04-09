@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -75,11 +76,24 @@ async function normalizeAssetUri(uri: string, extensionFallback: string) {
   return destination;
 }
 
+async function normalizeCoverImageUri(uri: string) {
+  try {
+    const result = await ImageManipulator.manipulateAsync(uri, [], {
+      compress: 0.9,
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+
+    return result.uri;
+  } catch {
+    return normalizeAssetUri(uri, "jpg");
+  }
+}
+
 export default function CreateMemoryScreen() {
   const insets = useSafeAreaInsets();
   const [coverUri, setCoverUri] = useState<string | null>(null);
-  const [coverBase64, setCoverBase64] = useState<string | null>(null);
   const [coverExtension, setCoverExtension] = useState<string>("jpg");
+  const [coverLoadFailed, setCoverLoadFailed] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const [recordingMillis, setRecordingMillis] = useState(0);
@@ -91,6 +105,10 @@ export default function CreateMemoryScreen() {
   const [reflection, setReflection] = useState("");
   const [tagsText, setTagsText] = useState("#graduation #memories");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setCoverLoadFailed(false);
+  }, [coverUri]);
 
   useEffect(() => {
     recordingRef.current = recording;
@@ -121,29 +139,23 @@ export default function CreateMemoryScreen() {
       allowsEditing: true,
       aspect: [4, 5],
       quality: 0.9,
-      base64: true,
+      base64: false,
       preferredAssetRepresentationMode:
         ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Automatic,
     });
 
     if (!result.canceled) {
       const picked = result.assets[0]?.uri;
-      const pickedBase64 = result.assets[0]?.base64 ?? null;
-      const pickedExtensionFromName =
-        result.assets[0]?.fileName?.split(".").pop()?.toLowerCase() ?? "jpg";
-      const pickedExtension = pickedBase64 ? "jpg" : pickedExtensionFromName;
 
       if (!picked) {
         setCoverUri(null);
-        setCoverBase64(null);
         return;
       }
 
-      setCoverBase64(pickedBase64);
-      setCoverExtension(pickedExtension);
+      setCoverExtension("jpg");
 
       try {
-        const normalized = await normalizeAssetUri(picked, "jpg");
+        const normalized = await normalizeCoverImageUri(picked);
         setCoverUri(normalized);
       } catch {
         // Fallback to the original URI when copy fails.
@@ -181,7 +193,6 @@ export default function CreateMemoryScreen() {
       const imageUrl = await uploadMemoryImage({
         userId: user.id,
         uri: coverUri,
-        base64: coverBase64 ?? undefined,
         extension: coverExtension,
       });
 
@@ -377,14 +388,15 @@ export default function CreateMemoryScreen() {
             className="relative mb-8 overflow-hidden rounded-lg bg-surface-container-low"
           >
             <View className="aspect-[16/10] w-full items-center justify-center">
-              {coverUri ? (
+              {coverUri && !coverLoadFailed ? (
                 <>
                   <Image
                     source={{ uri: coverUri }}
                     className="absolute inset-0 h-full w-full"
                     contentFit="cover"
+                    onError={() => setCoverLoadFailed(true)}
                   />
-                  <View className="absolute inset-0 bg-black/25" />
+                  <View className="absolute inset-0 bg-black/10" />
                 </>
               ) : (
                 <>

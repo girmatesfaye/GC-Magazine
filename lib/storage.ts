@@ -73,21 +73,16 @@ export async function uploadMemoryImage({
   base64?: string;
   extension?: string;
 }) {
-  const useBase64Upload = Boolean(base64);
-  const fileExtension = useBase64Upload
-    ? "jpg"
-    : extension ?? getFileExtension(uri ?? "", "jpg");
-  const mimeType = useBase64Upload
-    ? "image/jpeg"
-    : getMimeTypeFromExtension(fileExtension);
+  const fileExtension = extension ?? getFileExtension(uri ?? "", "jpg");
+  const mimeType = getMimeTypeFromExtension(fileExtension);
   const filePath = `${userId}/${Date.now()}.${fileExtension}`;
 
   let bytes: ArrayBuffer;
   try {
-    if (base64) {
-      bytes = decode(base64);
-    } else if (uri) {
+    if (uri) {
       bytes = await uriToArrayBuffer(uri);
+    } else if (base64) {
+      bytes = decode(base64);
     } else {
       throw new Error("No image source provided.");
     }
@@ -106,7 +101,6 @@ export async function uploadMemoryImage({
     throw error;
   }
 
-  // Persist storage object path; consumers can resolve signed/public URLs as needed.
   return filePath;
 }
 
@@ -149,6 +143,5 @@ export async function uploadMemoryAudio({
     throw error;
   }
 
-  // Persist storage object path; consumers can resolve signed/public URLs as needed.
   return filePath;
 }

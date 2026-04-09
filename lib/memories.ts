@@ -76,6 +76,15 @@ function normalizeStoragePath(path: string) {
   return stripQueryAndHash(path).replace(/^\/+/, "");
 }
 
+function stripBucketPrefix(path: string, bucket: string) {
+  const normalized = normalizeStoragePath(path);
+  if (normalized.startsWith(`${bucket}/`)) {
+    return normalized.slice(bucket.length + 1);
+  }
+
+  return normalized;
+}
+
 function extractStoragePath(value: string, bucket: string): string | null {
   const source = value.trim();
   if (!source) {
@@ -83,7 +92,8 @@ function extractStoragePath(value: string, bucket: string): string | null {
   }
 
   if (!/^https?:\/\//i.test(source)) {
-    return normalizeStoragePath(source);
+    const normalized = stripBucketPrefix(source, bucket);
+    return normalized || null;
   }
 
   let decoded = source;
@@ -103,7 +113,7 @@ function extractStoragePath(value: string, bucket: string): string | null {
     const index = decoded.indexOf(marker);
     if (index >= 0) {
       const rawPath = decoded.slice(index + marker.length);
-      const normalized = normalizeStoragePath(rawPath);
+      const normalized = stripBucketPrefix(rawPath, bucket);
       return normalized || null;
     }
   }
@@ -120,6 +130,10 @@ async function resolveStorageAssetUrl(
 
   const storagePath = extractStoragePath(value, MEMORY_MEDIA_BUCKET);
   if (!storagePath) {
+    if (/^https?:\/\//i.test(value)) {
+      return value;
+    }
+
     return value;
   }
 
@@ -135,7 +149,11 @@ async function resolveStorageAssetUrl(
     .from(MEMORY_MEDIA_BUCKET)
     .getPublicUrl(storagePath);
 
-  return publicData.publicUrl || value;
+  if (publicData?.publicUrl) {
+    return publicData.publicUrl;
+  }
+
+  return value;
 }
 
 async function fetchLikeState(memoryIds: string[]) {
@@ -219,7 +237,9 @@ export async function fetchMemories(): Promise<Memory[]> {
   }
 
   const rows = (data ?? []) as unknown as SupabaseMemoryRow[];
-  const { likeCounts, likedMemoryIds } = await fetchLikeState(rows.map((row) => row.id));
+  const { likeCounts, likedMemoryIds } = await fetchLikeState(
+    rows.map((row) => row.id),
+  );
   const resolvedAssets = await Promise.all(
     rows.map(async (row) => ({
       id: row.id,
@@ -227,7 +247,9 @@ export async function fetchMemories(): Promise<Memory[]> {
       voiceUrl: await resolveStorageAssetUrl(row.voice_url),
     })),
   );
-  const resolvedAssetById = new Map(resolvedAssets.map((asset) => [asset.id, asset]));
+  const resolvedAssetById = new Map(
+    resolvedAssets.map((asset) => [asset.id, asset]),
+  );
 
   return rows.map((row) =>
     buildMemoryFromRow(row, {
@@ -253,7 +275,9 @@ export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
   }
 
   const rows = (data ?? []) as unknown as SupabaseMemoryRow[];
-  const { likeCounts, likedMemoryIds } = await fetchLikeState(rows.map((row) => row.id));
+  const { likeCounts, likedMemoryIds } = await fetchLikeState(
+    rows.map((row) => row.id),
+  );
   const resolvedAssets = await Promise.all(
     rows.map(async (row) => ({
       id: row.id,
@@ -261,7 +285,9 @@ export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
       voiceUrl: await resolveStorageAssetUrl(row.voice_url),
     })),
   );
-  const resolvedAssetById = new Map(resolvedAssets.map((asset) => [asset.id, asset]));
+  const resolvedAssetById = new Map(
+    resolvedAssets.map((asset) => [asset.id, asset]),
+  );
 
   return rows.map((row) =>
     buildMemoryFromRow(row, {
