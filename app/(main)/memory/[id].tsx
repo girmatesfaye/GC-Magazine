@@ -257,7 +257,7 @@ export default function MemoryDetailScreen() {
             )}
           </Animated.View>
           <View className="absolute inset-0 bg-black/20" />
-          <View className="absolute bottom-0 left-0 right-0 h-40 bg-black/30" />
+          <View className="absolute bottom-0 left-0 right-0 h-10 bg-black/30" />
         </View>
 
         <View className="-mt-10 rounded-t-[32px] bg-surface px-8 pb-36 pt-7">

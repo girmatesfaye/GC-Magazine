@@ -19,12 +19,14 @@ type SupabaseMemoryRow = {
         full_name: string | null;
         university: string | null;
         department: string | null;
+        graduation_year: string | null;
         avatar_url: string | null;
       }
     | Array<{
         full_name: string | null;
         university: string | null;
         department: string | null;
+        graduation_year: string | null;
         avatar_url: string | null;
       }>
     | null;
@@ -56,6 +58,7 @@ const MEMORY_SELECT = `
     full_name,
     university,
     department,
+    graduation_year,
     avatar_url
   )
 `;
@@ -201,12 +204,14 @@ function buildMemoryFromRow(
   const authorName = profile?.full_name ?? "Anonymous";
   const university = profile?.university ?? "";
   const department = profile?.department ?? "";
+  const graduationYear = profile?.graduation_year ?? undefined;
   const likesCountValue = options?.likesCount ?? fallbackLikeCount(row);
 
   return {
     id: row.id,
     authorName,
     authorMeta: department || "Member",
+    authorBatch: graduationYear,
     university,
     imageUri: options?.resolvedImageUrl ?? row.image_url,
     avatarUri:

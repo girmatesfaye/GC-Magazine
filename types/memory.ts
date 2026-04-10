@@ -2,6 +2,7 @@ export type Memory = {
   id: string;
   authorName: string;
   authorMeta: string;
+  authorBatch?: string;
   university: string;
   imageUri: string;
   avatarUri: string;

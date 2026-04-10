@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -20,11 +20,20 @@ const AVATAR =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDigwncOBpv2TXfewZ5ZQuJATfKG2H0vfcY5AzyUY2SmhrK72YjKvnNn3dTRKb79BPr100UkJEBb1-CLhQwi7bQTw2M2jGVH-1gErJP3W2GvT1oeWTSZxLoCiZ1Z74Ef6y8Incvc0M0hM86RyHCDLSafFCW991BKHCrVao7FjOsKbyIWPLFrGI-m0tVFby1TK0x7GpDAxqq1TgRt-qqZdo3fjWNGVCuWckcLk-iybxqGS7h99Fjfaoh5ZxyR9KpGCPGQXr_pp9n0SJh";
 
 const FILTERS = ["All", "My University", "My Department", "My Batch"] as const;
+type FeedFilter = (typeof FILTERS)[number];
+
+function normalizeComparable(value: string | null | undefined) {
+  return value?.trim().toLowerCase() ?? "";
+}
 
 export default function HomeFeedScreen() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [avatarUri, setAvatarUri] = useState(AVATAR);
+  const [selectedFilter, setSelectedFilter] = useState<FeedFilter>("All");
+  const [myUniversity, setMyUniversity] = useState<string | null>(null);
+  const [myDepartment, setMyDepartment] = useState<string | null>(null);
+  const [myBatch, setMyBatch] = useState<string | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,6 +71,9 @@ export default function HomeFeedScreen() {
       const profile = profileResult.value;
       const safeName = profile?.full_name?.trim();
       setIsAdminUser(profile?.is_admin ?? false);
+      setMyUniversity(profile?.university ?? null);
+      setMyDepartment(profile?.department ?? null);
+      setMyBatch(profile?.graduation_year ?? null);
       setAvatarUri(
         profile?.avatar_url ??
           (safeName
@@ -70,6 +82,9 @@ export default function HomeFeedScreen() {
       );
     } else {
       setIsAdminUser(false);
+      setMyUniversity(null);
+      setMyDepartment(null);
+      setMyBatch(null);
       setAvatarUri(AVATAR);
     }
 
@@ -134,6 +149,42 @@ export default function HomeFeedScreen() {
   };
 
   const canModerate = isAdminUser;
+  const filteredMemories = useMemo(() => {
+    if (selectedFilter === "All") {
+      return memories;
+    }
+
+    if (selectedFilter === "My University") {
+      const target = normalizeComparable(myUniversity);
+      if (!target) {
+        return memories;
+      }
+
+      return memories.filter(
+        (memory) => normalizeComparable(memory.university) === target,
+      );
+    }
+
+    if (selectedFilter === "My Department") {
+      const target = normalizeComparable(myDepartment);
+      if (!target) {
+        return memories;
+      }
+
+      return memories.filter(
+        (memory) => normalizeComparable(memory.authorMeta) === target,
+      );
+    }
+
+    const target = normalizeComparable(myBatch);
+    if (!target) {
+      return memories;
+    }
+
+    return memories.filter(
+      (memory) => normalizeComparable(memory.authorBatch) === target,
+    );
+  }, [memories, myBatch, myDepartment, myUniversity, selectedFilter]);
 
   return (
     <View className="flex-1 bg-surface">
@@ -200,27 +251,30 @@ export default function HomeFeedScreen() {
           className="mb-8 flex-row gap-3 py-2"
           contentContainerClassName="gap-3 pr-4"
         >
-          {FILTERS.map((f, i) => (
+          {FILTERS.map((f) => (
             <Pressable
               key={f}
-              className={`rounded-full px-6 py-2.5 ${i === 0 ? "bg-primary-container" : "border border-outline-variant/15 bg-surface-container-low"}`}
+              onPress={() => setSelectedFilter(f)}
+              className={`rounded-full px-6 py-2.5 ${selectedFilter === f ? "bg-primary-container" : "border border-outline-variant/15 bg-surface-container-low"}`}
             >
               <Text
-                className={`font-headline text-sm font-semibold ${i === 0 ? "text-on-primary-container" : "text-on-surface-variant"}`}
+                className={`font-headline text-sm font-semibold ${selectedFilter === f ? "text-on-primary-container" : "text-on-surface-variant"}`}
               >
                 {f}
               </Text>
             </Pressable>
           ))}
         </ScrollView>
-        {!loading && memories.length === 0 ? (
+        {!loading && filteredMemories.length === 0 ? (
           <View className="mb-4 rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-4">
             <Text className="text-center font-body text-on-surface-variant">
-              No memories found yet. Share the first memory to start the feed.
+              {selectedFilter === "All"
+                ? "No memories found yet. Share the first memory to start the feed."
+                : "No data with this filter."}
             </Text>
           </View>
         ) : null}
-        {memories.map((m) => (
+        {filteredMemories.map((m) => (
           <MemoryCard
             key={m.id}
             memory={m}
