@@ -24,7 +24,6 @@ export default function OnboardingCaptureScreen() {
           label="Skip"
           onPress={() => router.push("/user-setup")}
           fullWidth={false}
-          className="h-10 border-primary-container/40 px-5"
           textClassName="text-sm font-semibold text-primary-container"
         />
       </View>
