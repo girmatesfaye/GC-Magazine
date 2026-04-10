@@ -54,7 +54,6 @@ export default function MainLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: "slide_from_right",
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
           animationMatchesGesture: true,
