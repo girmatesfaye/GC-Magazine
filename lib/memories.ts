@@ -238,7 +238,7 @@ export async function fetchMemories(): Promise<Memory[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message || "Could not load memories from Supabase.");
+    throw new Error(error.message || "Could not load memories.");
   }
 
   const rows = (data ?? []) as unknown as SupabaseMemoryRow[];
@@ -274,9 +274,7 @@ export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(
-      error.message || "Could not load your memories from Supabase.",
-    );
+    throw new Error(error.message || "Could not load your memories.");
   }
 
   const rows = (data ?? []) as unknown as SupabaseMemoryRow[];

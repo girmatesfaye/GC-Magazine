@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
+import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -41,9 +41,22 @@ function parseTokensFromUrl(url: string) {
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ reason?: string }>();
+  const promptShownRef = useRef(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (promptShownRef.current) {
+      return;
+    }
+
+    if (params.reason === "expired") {
+      promptShownRef.current = true;
+      Alert.alert("Please login", "Your session expired. Please login again.");
+    }
+  }, [params.reason]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -52,7 +65,10 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     setLoading(false);
 
     if (error) {
@@ -77,7 +93,10 @@ export default function LoginScreen() {
 
     if (error || !data?.url) {
       setLoading(false);
-      Alert.alert("Google sign in failed", error?.message ?? "No auth URL returned.");
+      Alert.alert(
+        "Google sign in failed",
+        error?.message ?? "No auth URL returned.",
+      );
       return;
     }
 

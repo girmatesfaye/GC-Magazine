@@ -6,6 +6,7 @@ import { Alert, ScrollView, Text, View } from "react-native";
 
 import { FeedHeader } from "@/components/feed-header";
 import { MemoryCard } from "@/components/memory-card";
+import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { fetchMemoriesByUserId } from "@/lib/memories";
 import { fetchCurrentProfile } from "@/lib/profiles";
 import { supabase } from "@/lib/supabase";
@@ -64,8 +65,13 @@ export default function ProfileScreen() {
 
       if (!profile) {
         setArchive([]);
-        setLoadError("Could not load your profile. Please sign in again.");
+        setLoadError("Please login to continue.");
         setLoading(false);
+        Alert.alert(
+          "Please login",
+          "Your session expired. Please login again.",
+        );
+        router.replace("/login?reason=expired");
         return;
       }
 
@@ -104,7 +110,15 @@ export default function ProfileScreen() {
         const message =
           error instanceof Error
             ? error.message
-            : "Could not load your profile archive from Supabase.";
+            : "Could not load your profile archive.";
+        if (isAuthExpiredErrorMessage(message)) {
+          Alert.alert(
+            "Please login",
+            "Your session expired. Please login again.",
+          );
+          router.replace("/login?reason=expired");
+          return;
+        }
         setArchive([]);
         setLoadError(message);
       } finally {
@@ -157,7 +171,7 @@ export default function ProfileScreen() {
         {loading ? (
           <View className="mb-4 rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-3">
             <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-              Loading profile from Supabase...
+              Loading profile...
             </Text>
           </View>
         ) : null}

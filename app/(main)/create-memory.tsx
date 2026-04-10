@@ -23,6 +23,7 @@ import {
 } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/primary-button";
+import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { uploadMemoryAudio, uploadMemoryImage } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 
@@ -145,8 +146,8 @@ export default function CreateMemoryScreen() {
 
     if (userError || !user) {
       setLoading(false);
-      Alert.alert("Not signed in", "Please sign in again to share a memory.");
-      router.replace("/login");
+      Alert.alert("Please login", "Your session expired. Please login again.");
+      router.replace("/login?reason=expired");
       return;
     }
 
@@ -192,6 +193,14 @@ export default function CreateMemoryScreen() {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Could not save memory.";
+      if (isAuthExpiredErrorMessage(message)) {
+        Alert.alert(
+          "Please login",
+          "Your session expired. Please login again.",
+        );
+        router.replace("/login?reason=expired");
+        return;
+      }
       Alert.alert("Upload failed", `Create-memory failed: ${message}`);
     } finally {
       setLoading(false);
@@ -476,7 +485,7 @@ export default function CreateMemoryScreen() {
             <View className="mt-3 flex-row items-center justify-center gap-2">
               <ActivityIndicator size="small" color="#ffd700" />
               <Text className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
-                Uploading to Supabase
+                Uploading memory...
               </Text>
             </View>
           ) : null}

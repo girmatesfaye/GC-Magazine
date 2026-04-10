@@ -1,4 +1,5 @@
 import { Redirect, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 
 import { fetchCurrentProfile } from "@/lib/profiles";
@@ -33,8 +34,22 @@ export default function AdminLayout() {
   }
 
   if (!isAdmin) {
-    return <Redirect href="/home" />;
+    return <Redirect href="/login?reason=expired" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+          animationMatchesGesture: true,
+          contentStyle: { backgroundColor: "#131313" },
+        }}
+      />
+    </>
+  );
 }

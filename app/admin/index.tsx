@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MemoryCard } from "@/components/memory-card";
 import { PrimaryButton } from "@/components/primary-button";
 import { SecondaryButton } from "@/components/secondary-button";
+import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { fetchMemories } from "@/lib/memories";
 import { fetchCurrentProfile } from "@/lib/profiles";
 import { supabase } from "@/lib/supabase";
@@ -40,11 +41,19 @@ export default function AdminScreen() {
       );
       setMemories(memoryList);
     } catch (error) {
-      setLoadError(
+      const message =
         error instanceof Error
           ? error.message
-          : "Could not load moderation data.",
-      );
+          : "Could not load moderation data.";
+      if (isAuthExpiredErrorMessage(message)) {
+        Alert.alert(
+          "Please login",
+          "Your session expired. Please login again.",
+        );
+        router.replace("/login?reason=expired");
+        return;
+      }
+      setLoadError(message);
       setMemories([]);
     } finally {
       setLoading(false);
@@ -70,6 +79,14 @@ export default function AdminScreen() {
     setDeletingId(null);
 
     if (error) {
+      if (isAuthExpiredErrorMessage(error.message)) {
+        Alert.alert(
+          "Please login",
+          "Your session expired. Please login again.",
+        );
+        router.replace("/login?reason=expired");
+        return;
+      }
       Alert.alert("Delete failed", error.message);
       return;
     }
@@ -95,7 +112,7 @@ export default function AdminScreen() {
           Admin Tools
         </Text>
         <Text className="font-body text-base leading-relaxed text-on-surface-variant">
-          Admin access is tied to your Supabase profile. Delete posts directly
+          Admin access is tied to your account profile. Delete posts directly
           from this moderation list.
         </Text>
         <View className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-4">

@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -12,6 +12,7 @@ import {
 
 import { FeedHeader } from "@/components/feed-header";
 import { MemoryCard } from "@/components/memory-card";
+import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { fetchMemories, toggleMemoryLike } from "@/lib/memories";
 import { fetchCurrentProfile } from "@/lib/profiles";
 import type { Memory } from "@/types/memory";
@@ -37,68 +38,96 @@ export default function HomeFeedScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [likingId, setLikingId] = useState<string | null>(null);
+  const hasLoadedOnceRef = useRef(false);
 
-  const loadMemories = useCallback(async (silent = false) => {
-    if (silent) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setLoadError(null);
-
-    const [memoriesResult, profileResult] = await Promise.allSettled([
-      fetchMemories(),
-      fetchCurrentProfile(),
-    ]);
-
-    if (memoriesResult.status === "fulfilled") {
-      setMemories(memoriesResult.value);
-    } else {
-      setMemories([]);
-      const message =
-        memoriesResult.reason instanceof Error
-          ? memoriesResult.reason.message
-          : "Could not load memories from Supabase.";
-      setLoadError(message);
-    }
-
-    if (profileResult.status === "fulfilled") {
-      const profile = profileResult.value;
-      const safeName = profile?.full_name?.trim();
-      if (profile?.is_admin) {
-        router.replace("/admin");
-        setLoading(false);
-        setRefreshing(false);
-        return;
+  const loadMemories = useCallback(
+    async (mode: "initial" | "refresh" | "background" = "initial") => {
+      if (mode === "initial") {
+        setLoading(true);
       }
-      setMyUniversity(profile?.university ?? null);
-      setMyDepartment(profile?.department ?? null);
-      setMyBatch(profile?.graduation_year ?? null);
-      setAvatarUri(
-        profile?.avatar_url ??
-          (safeName
-            ? `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(safeName)}`
-            : AVATAR),
-      );
-    } else {
-      setMyUniversity(null);
-      setMyDepartment(null);
-      setMyBatch(null);
-      setAvatarUri(AVATAR);
-    }
 
-    setLoading(false);
-    setRefreshing(false);
-  }, []);
+      if (mode === "refresh") {
+        setRefreshing(true);
+      }
+
+      if (mode !== "background") {
+        setLoadError(null);
+      }
+
+      const [memoriesResult, profileResult] = await Promise.allSettled([
+        fetchMemories(),
+        fetchCurrentProfile(),
+      ]);
+
+      if (memoriesResult.status === "fulfilled") {
+        setMemories(memoriesResult.value);
+      } else {
+        const message =
+          memoriesResult.reason instanceof Error
+            ? memoriesResult.reason.message
+            : "Could not load memories.";
+        if (isAuthExpiredErrorMessage(message)) {
+          Alert.alert(
+            "Please login",
+            "Your session expired. Please login again.",
+          );
+          router.replace("/login?reason=expired");
+          return;
+        }
+
+        if (mode !== "background") {
+          setMemories([]);
+          setLoadError(message);
+        }
+      }
+
+      if (profileResult.status === "fulfilled") {
+        const profile = profileResult.value;
+        const safeName = profile?.full_name?.trim();
+        if (profile?.is_admin) {
+          router.replace("/admin");
+          setLoading(false);
+          setRefreshing(false);
+          hasLoadedOnceRef.current = true;
+          return;
+        }
+        setMyUniversity(profile?.university ?? null);
+        setMyDepartment(profile?.department ?? null);
+        setMyBatch(profile?.graduation_year ?? null);
+        setAvatarUri(
+          profile?.avatar_url ??
+            (safeName
+              ? `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(safeName)}`
+              : AVATAR),
+        );
+      } else if (mode !== "background") {
+        setMyUniversity(null);
+        setMyDepartment(null);
+        setMyBatch(null);
+        setAvatarUri(AVATAR);
+      }
+
+      setLoading(false);
+      setRefreshing(false);
+      hasLoadedOnceRef.current = true;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    void loadMemories("initial");
+  }, [loadMemories]);
 
   useFocusEffect(
     useCallback(() => {
-      void loadMemories();
+      if (hasLoadedOnceRef.current) {
+        void loadMemories("background");
+      }
     }, [loadMemories]),
   );
 
   const handleRefresh = async () => {
-    await loadMemories(true);
+    await loadMemories("refresh");
   };
 
   const handleToggleLike = async (id: string) => {
@@ -186,7 +215,7 @@ export default function HomeFeedScreen() {
         {loading ? (
           <View className="mb-4 rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-3">
             <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-              Loading memories from Supabase...
+              Loading memories...
             </Text>
           </View>
         ) : null}
