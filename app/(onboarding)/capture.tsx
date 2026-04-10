@@ -1,31 +1,25 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import { OnboardingBackground } from "@/components/onboarding-background";
 import { PrimaryButton } from "@/components/primary-button";
-import { SecondaryButton } from "@/components/secondary-button";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const BG = require("../../assets/images/Capture-screen.png");
 
 export default function OnboardingCaptureScreen() {
   return (
     <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
-      <OnboardingBackground source={BG} overlayOpacity={0.25} />
-      <View className="z-10 flex-row items-center justify-end bg-surface/60 px-6 py-4 border-b border-outline-variant/20">
-        {/* <Pressable onPress={() => router.push("/welcome")} hitSlop={12}>
-          <Ionicons name="arrow-back" size={24} color="#ffd700" />
-        </Pressable>
-        <Text className="font-headline text-base font-black italic tracking-tighter text-primary-container">
-          The Keepsake
-        </Text> */}
-        <SecondaryButton
-          label="Skip"
+      <OnboardingBackground source={BG} overlayOpacity={0.3} />
+      <View className="z-10 flex-row items-center justify-end  px-6 py-4">
+        <Pressable
           onPress={() => router.push("/user-setup")}
-          fullWidth={false}
-          textClassName="text-sm font-semibold text-primary-container"
-        />
+          className="rounded-lg border border-primary-container/20 bg-surface-container-low/35 px-3 py-1.5 active:opacity-80"
+        >
+          <Text className="font-label text-[10px] font-bold uppercase tracking-[0.12em] text-primary-container">
+            Skip
+          </Text>
+        </Pressable>
       </View>
       <ScrollView
         className="z-10 flex-1 px-8 pt-8"
@@ -33,7 +27,7 @@ export default function OnboardingCaptureScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <Text
-          className="mt-2 font-headline text-5xl font-extrabold leading-[0.95] tracking-tighter text-primary"
+          className="mt-2 text-center font-headline text-5xl font-extrabold leading-[0.95] tracking-tighter text-primary"
           style={{
             textShadowColor: "rgba(0, 0, 0, 0.75)",
             textShadowOffset: { width: 0, height: 2 },
@@ -44,7 +38,7 @@ export default function OnboardingCaptureScreen() {
           <Text className="italic text-primary-container">Emotion</Text>
         </Text>
         <Text
-          className="mt-4 max-w-xl font-body text-lg leading-relaxed text-primary"
+          className="mt-4 max-w-xl self-center text-center font-body text-lg leading-relaxed text-primary"
           style={{ opacity: 0.9 }}
         >
           Save the cheers, the tears, and the laughs with high-fidelity photo

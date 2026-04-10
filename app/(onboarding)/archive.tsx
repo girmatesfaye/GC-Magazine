@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { OnboardingBackground } from "@/components/onboarding-background";
 import { PrimaryButton } from "@/components/primary-button";
-import { SecondaryButton } from "@/components/secondary-button";
 
 const BG = require("../../assets/images/Archive-screen.png");
 
@@ -13,16 +12,22 @@ export default function OnboardingArchiveScreen() {
   return (
     <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
       <OnboardingBackground source={BG} overlayOpacity={0.3} />
-      <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+      <View className="z-10 flex-row items-center justify-between px-6 py-4">
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          className="rounded-full bg-surface-container-low/50 p-2"
+        >
           <Ionicons name="arrow-back" size={24} color="#ffd700" />
         </Pressable>
-        <SecondaryButton
-          label="Skip"
+        <Pressable
           onPress={() => router.push("/user-setup")}
-          fullWidth={false}
-          textClassName="text-sm font-semibold text-primary-container"
-        />
+          className="rounded-lg border border-primary-container/20 bg-surface-container-low/35 px-3 py-1.5 active:opacity-80"
+        >
+          <Text className="font-label text-[10px] font-bold uppercase tracking-[0.12em] text-primary-container">
+            Skip
+          </Text>
+        </Pressable>
       </View>
       <ScrollView
         className="z-10 flex-1 px-8 pt-8"
@@ -30,14 +35,14 @@ export default function OnboardingArchiveScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mb-10 items-center">
-          <View className="mb-8 h-40 w-40 items-center justify-center rounded-full border border-secondary/40 bg-surface-container-low">
+          {/* <View className="mb-8 h-40 w-40 items-center justify-center rounded-full border border-secondary/40 bg-surface-container-low">
             <Ionicons name="albums" size={48} color="#e9c176" />
-          </View>
+          </View> */}
           <Text className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">
             Archive Forever
           </Text>
           <Text
-            className="mt-2 text-center font-headline text-5xl font-extrabold tracking-tight text-primary-container"
+            className="mt-2 text-center font-headline text-5xl font-extrabold leading-[0.95] tracking-tighter text-primary-container"
             style={{
               textShadowColor: "rgba(0, 0, 0, 0.75)",
               textShadowOffset: { width: 0, height: 2 },
@@ -47,7 +52,7 @@ export default function OnboardingArchiveScreen() {
             A Digital Time Capsule
           </Text>
           <Text
-            className="mt-4 max-w-lg text-center font-body text-lg font-light leading-relaxed text-primary"
+            className="mt-4 max-w-lg text-center font-body text-lg leading-relaxed text-primary"
             style={{ opacity: 0.9 }}
           >
             Your graduation isn&apos;t just a day, it&apos;s a milestone.
