@@ -13,6 +13,14 @@ export function MainTabBar() {
   const isProfile = pathname === "/profile" || pathname.endsWith("/profile");
   const isCreate = pathname.includes("create-memory");
 
+  const switchTab = (target: "/home" | "/profile") => {
+    if (pathname === target || pathname.endsWith(target)) {
+      return;
+    }
+
+    router.replace(target);
+  };
+
   const TabBtn = ({
     active,
     icon,
@@ -50,7 +58,7 @@ export function MainTabBar() {
         <TabBtn
           active={isHome && !isCreate}
           icon="home-outline"
-          onPress={() => router.push("/home")}
+          onPress={() => switchTab("/home")}
         />
         <TabBtn
           active={isCreate}
@@ -61,7 +69,7 @@ export function MainTabBar() {
         <TabBtn
           active={isProfile && !isCreate}
           icon="person-outline"
-          onPress={() => router.push("/profile")}
+          onPress={() => switchTab("/profile")}
         />
       </View>
     </View>

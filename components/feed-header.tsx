@@ -8,7 +8,7 @@ type Props = {
 
 export function FeedHeader({ actionType = "coffee", onActionPress }: Props) {
   return (
-    <View className="flex-row items-center justify-between bg-surface/80 px-6 py-4">
+    <View className="flex-row items-center justify-between bg-surface/80 mt-2 px-6 py-4">
       <View className="flex-row items-center gap-3">
         <Text className="font-headline text-2xl font-black tracking-tighter text-primary-container">
           GC Magazine
