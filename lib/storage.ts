@@ -112,6 +112,50 @@ export async function uploadMemoryImage({
   return persistedPath;
 }
 
+export async function uploadProfileAvatar({
+  userId,
+  uri,
+}: {
+  userId: string;
+  uri: string;
+}) {
+  const normalizedUri = await normalizeImage(uri);
+  const filePath = `${userId}/avatars/${Date.now()}.jpg`;
+  const mimeType = "image/jpeg";
+
+  let bytes: ArrayBuffer;
+  try {
+    bytes = await uriToArrayBuffer(normalizedUri);
+  } catch {
+    throw new Error("Could not read selected profile image file.");
+  }
+
+  const { data, error } = await supabase.storage
+    .from(MEMORY_MEDIA_BUCKET)
+    .upload(filePath, bytes, {
+      contentType: mimeType,
+      upsert: false,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  const persistedPath = data?.path ?? filePath;
+  const { data: signedData, error: signedError } = await supabase.storage
+    .from(MEMORY_MEDIA_BUCKET)
+    .createSignedUrl(persistedPath, 60 * 60 * 24 * 7);
+
+  if (signedError || !signedData?.signedUrl) {
+    throw new Error("Avatar uploaded but preview URL generation failed.");
+  }
+
+  return {
+    path: persistedPath,
+    signedUrl: signedData.signedUrl,
+  };
+}
+
 export async function uploadMemoryAudio({
   userId,
   uri,

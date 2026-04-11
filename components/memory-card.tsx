@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
-import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import {
   GestureResponderEvent,
-  Image as NativeImage,
+  Image,
   Pressable,
   Text,
   View,
@@ -141,7 +140,7 @@ export function MemoryCard({
           <Image
             source={{ uri: memory.avatarUri }}
             className="h-full w-full"
-            contentFit="cover"
+            resizeMode="cover"
           />
         </View>
         <View>
@@ -186,7 +185,7 @@ export function MemoryCard({
             </Text>
           </View>
         ) : (
-          <NativeImage
+          <Image
             source={{ uri: memory.imageUri }}
             className="h-full w-full"
             resizeMode="cover"

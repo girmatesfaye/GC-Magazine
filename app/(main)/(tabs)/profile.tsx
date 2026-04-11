@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
 
 import { FeedHeader } from "@/components/feed-header";
 import { MemoryCard } from "@/components/memory-card";
 import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { fetchMemoriesByUserId } from "@/lib/memories";
-import { fetchCurrentProfile } from "@/lib/profiles";
+import { fetchCurrentProfile, updateProfileAvatar } from "@/lib/profiles";
+import { uploadProfileAvatar } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import type { Memory } from "@/types/memory";
 
@@ -32,21 +33,15 @@ function formatArchiveDate(createdAt?: string) {
   }).format(parsed);
 }
 
-function parseLikesCount(value?: string) {
-  if (!value) {
-    return 0;
-  }
-
-  const parsed = Number.parseInt(value.replaceAll(",", ""), 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 export default function ProfileScreen() {
   const [fullName, setFullName] = useState("");
   const [metaLine, setMetaLine] = useState("");
   const [university, setUniversity] = useState("");
   const [avatarUri, setAvatarUri] = useState(AVATAR);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [archive, setArchive] = useState<Memory[]>([]);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -88,6 +83,7 @@ export default function ProfileScreen() {
       setMetaLine(nextMeta);
       setUniversity(safeUniversity);
       setAvatarUri(nextAvatar);
+      setProfileId(profile.id);
 
       try {
         const memories = await fetchMemoriesByUserId(profile.id);
@@ -135,17 +131,13 @@ export default function ProfileScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [avatarUri]);
+
   const totalMemories = archive.length;
   const totalVoiceMemories = useMemo(
     () => archive.filter((memory) => memory.hasVoice).length,
-    [archive],
-  );
-  const totalEchoes = useMemo(
-    () =>
-      archive.reduce(
-        (sum, memory) => sum + parseLikesCount(memory.likesCount),
-        0,
-      ),
     [archive],
   );
 
@@ -158,6 +150,82 @@ export default function ProfileScreen() {
     }
 
     router.replace("/login");
+  };
+
+  const handleAvatarUpload = async () => {
+    if (uploadingAvatar) {
+      return;
+    }
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission required",
+        "Please allow photo library access to update your profile image.",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.9,
+      base64: false,
+      preferredAssetRepresentationMode:
+        ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const picked = result.assets[0]?.uri;
+    if (!picked) {
+      Alert.alert("No image selected", "Please choose an image and try again.");
+      return;
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    const currentProfileId = profileId ?? user?.id ?? null;
+    if (userError || !currentProfileId) {
+      Alert.alert("Please login", "Your session expired. Please login again.");
+      router.replace("/login?reason=expired");
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const uploadedAvatar = await uploadProfileAvatar({
+        userId: currentProfileId,
+        uri: picked,
+      });
+
+      await updateProfileAvatar(currentProfileId, uploadedAvatar.path);
+      setAvatarUri(`${uploadedAvatar.signedUrl}&t=${Date.now()}`);
+      setProfileId(currentProfileId);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not update profile image.";
+      if (isAuthExpiredErrorMessage(message)) {
+        Alert.alert(
+          "Please login",
+          "Your session expired. Please login again.",
+        );
+        router.replace("/login?reason=expired");
+        return;
+      }
+      Alert.alert("Upload failed", message);
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   return (
@@ -186,16 +254,33 @@ export default function ProfileScreen() {
           <View className="relative">
             <View className="h-20 w-20 overflow-hidden rounded-full border-2 border-primary-container p-0.5">
               <View className="h-full w-full overflow-hidden rounded-full border-2 border-surface">
-                <Image
-                  source={{ uri: avatarUri }}
-                  className="h-full w-full"
-                  contentFit="cover"
-                />
+                {avatarLoadFailed ? (
+                  <View className="h-full w-full items-center justify-center bg-surface-container-low">
+                    <Ionicons name="person" size={30} color="#fff6df" />
+                  </View>
+                ) : (
+                  <Image
+                    source={{ uri: avatarUri }}
+                    className="h-full w-full"
+                    resizeMode="cover"
+                    onError={() => setAvatarLoadFailed(true)}
+                  />
+                )}
               </View>
             </View>
-            <View className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full bg-primary-container">
-              <Ionicons name="checkmark" size={14} color="#705e00" />
-            </View>
+            <Pressable
+              onPress={() => {
+                void handleAvatarUpload();
+              }}
+              disabled={uploadingAvatar}
+              className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full bg-primary-container"
+            >
+              <Ionicons
+                name={uploadingAvatar ? "hourglass-outline" : "pencil"}
+                size={14}
+                color="#705e00"
+              />
+            </Pressable>
           </View>
           <View>
             {fullName ? (

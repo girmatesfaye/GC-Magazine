@@ -196,6 +196,7 @@ function buildMemoryFromRow(
     likedByMe?: boolean;
     resolvedImageUrl?: string;
     resolvedVoiceUrl?: string;
+    resolvedAvatarUrl?: string;
   },
 ): Memory {
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
@@ -213,6 +214,7 @@ function buildMemoryFromRow(
     university,
     imageUri: options?.resolvedImageUrl ?? row.image_url,
     avatarUri:
+      options?.resolvedAvatarUrl ??
       profile?.avatar_url ??
       `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(authorName)}`,
     tags: row.tags ?? [],
@@ -247,6 +249,10 @@ export async function fetchMemories(): Promise<Memory[]> {
       id: row.id,
       imageUrl: await resolveStorageAssetUrl(row.image_url),
       voiceUrl: await resolveStorageAssetUrl(row.voice_url),
+      avatarUrl: await resolveStorageAssetUrl(
+        (Array.isArray(row.profiles) ? row.profiles[0] : row.profiles)
+          ?.avatar_url,
+      ),
     })),
   );
   const resolvedAssetById = new Map(
@@ -259,6 +265,7 @@ export async function fetchMemories(): Promise<Memory[]> {
       likedByMe: likedMemoryIds.has(row.id),
       resolvedImageUrl: resolvedAssetById.get(row.id)?.imageUrl,
       resolvedVoiceUrl: resolvedAssetById.get(row.id)?.voiceUrl,
+      resolvedAvatarUrl: resolvedAssetById.get(row.id)?.avatarUrl,
     }),
   );
 }
@@ -283,6 +290,10 @@ export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
       id: row.id,
       imageUrl: await resolveStorageAssetUrl(row.image_url),
       voiceUrl: await resolveStorageAssetUrl(row.voice_url),
+      avatarUrl: await resolveStorageAssetUrl(
+        (Array.isArray(row.profiles) ? row.profiles[0] : row.profiles)
+          ?.avatar_url,
+      ),
     })),
   );
   const resolvedAssetById = new Map(
@@ -295,6 +306,7 @@ export async function fetchMemoriesByUserId(userId: string): Promise<Memory[]> {
       likedByMe: likedMemoryIds.has(row.id),
       resolvedImageUrl: resolvedAssetById.get(row.id)?.imageUrl,
       resolvedVoiceUrl: resolvedAssetById.get(row.id)?.voiceUrl,
+      resolvedAvatarUrl: resolvedAssetById.get(row.id)?.avatarUrl,
     }),
   );
 }
@@ -320,16 +332,22 @@ export async function fetchMemoryById(id: string): Promise<Memory | undefined> {
 
   const row = data as unknown as SupabaseMemoryRow;
   const { likeCounts, likedMemoryIds } = await fetchLikeState([row.id]);
-  const [resolvedImageUrl, resolvedVoiceUrl] = await Promise.all([
-    resolveStorageAssetUrl(row.image_url),
-    resolveStorageAssetUrl(row.voice_url),
-  ]);
+  const [resolvedImageUrl, resolvedVoiceUrl, resolvedAvatarUrl] =
+    await Promise.all([
+      resolveStorageAssetUrl(row.image_url),
+      resolveStorageAssetUrl(row.voice_url),
+      resolveStorageAssetUrl(
+        (Array.isArray(row.profiles) ? row.profiles[0] : row.profiles)
+          ?.avatar_url,
+      ),
+    ]);
 
   return buildMemoryFromRow(row, {
     likesCount: likeCounts.get(row.id),
     likedByMe: likedMemoryIds.has(row.id),
     resolvedImageUrl,
     resolvedVoiceUrl,
+    resolvedAvatarUrl,
   });
 }
 

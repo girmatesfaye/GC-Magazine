@@ -18,9 +18,6 @@ import { fetchMemories, toggleMemoryLike } from "@/lib/memories";
 import { fetchCurrentProfile } from "@/lib/profiles";
 import type { Memory } from "@/types/memory";
 
-const AVATAR =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDigwncOBpv2TXfewZ5ZQuJATfKG2H0vfcY5AzyUY2SmhrK72YjKvnNn3dTRKb79BPr100UkJEBb1-CLhQwi7bQTw2M2jGVH-1gErJP3W2GvT1oeWTSZxLoCiZ1Z74Ef6y8Incvc0M0hM86RyHCDLSafFCW991BKHCrVao7FjOsKbyIWPLFrGI-m0tVFby1TK0x7GpDAxqq1TgRt-qqZdo3fjWNGVCuWckcLk-iybxqGS7h99Fjfaoh5ZxyR9KpGCPGQXr_pp9n0SJh";
-
 const FILTERS = ["All", "My University", "My Department", "My Batch"] as const;
 type FeedFilter = (typeof FILTERS)[number];
 
@@ -29,7 +26,6 @@ function normalizeComparable(value: string | null | undefined) {
 }
 
 export default function HomeFeedScreen() {
-  const [avatarUri, setAvatarUri] = useState(AVATAR);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FeedFilter>("All");
   const [myUniversity, setMyUniversity] = useState<string | null>(null);
@@ -85,7 +81,6 @@ export default function HomeFeedScreen() {
 
       if (profileResult.status === "fulfilled") {
         const profile = profileResult.value;
-        const safeName = profile?.full_name?.trim();
         if (profile?.is_admin) {
           router.replace("/admin");
           setLoading(false);
@@ -96,17 +91,10 @@ export default function HomeFeedScreen() {
         setMyUniversity(profile?.university ?? null);
         setMyDepartment(profile?.department ?? null);
         setMyBatch(profile?.graduation_year ?? null);
-        setAvatarUri(
-          profile?.avatar_url ??
-            (safeName
-              ? `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(safeName)}`
-              : AVATAR),
-        );
       } else if (mode !== "background") {
         setMyUniversity(null);
         setMyDepartment(null);
         setMyBatch(null);
-        setAvatarUri(AVATAR);
       }
 
       setLoading(false);

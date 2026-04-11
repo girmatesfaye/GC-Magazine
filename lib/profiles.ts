@@ -1,5 +1,31 @@
 import { supabase } from "@/lib/supabase";
 
+const PROFILE_MEDIA_BUCKET = "memory-media";
+
+function isHttpUrl(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
+async function resolveAvatarUrl(avatarValue: string | null) {
+  if (!avatarValue) {
+    return null;
+  }
+
+  if (isHttpUrl(avatarValue)) {
+    return avatarValue;
+  }
+
+  const { data, error } = await supabase.storage
+    .from(PROFILE_MEDIA_BUCKET)
+    .createSignedUrl(avatarValue, 60 * 60 * 24 * 7);
+
+  if (error || !data?.signedUrl) {
+    return null;
+  }
+
+  return data.signedUrl;
+}
+
 export type Profile = {
   id: string;
   full_name: string | null;
@@ -32,5 +58,22 @@ export async function fetchCurrentProfile(): Promise<Profile | null> {
     return null;
   }
 
-  return data as Profile;
+  const typedData = data as Profile;
+  const resolvedAvatarUrl = await resolveAvatarUrl(typedData.avatar_url);
+
+  return {
+    ...typedData,
+    avatar_url: resolvedAvatarUrl,
+  };
+}
+
+export async function updateProfileAvatar(userId: string, avatarUrl: string) {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", userId);
+
+  if (error) {
+    throw error;
+  }
 }
