@@ -81,13 +81,6 @@ export default function HomeFeedScreen() {
 
       if (profileResult.status === "fulfilled") {
         const profile = profileResult.value;
-        if (profile?.is_admin) {
-          router.replace("/admin");
-          setLoading(false);
-          setRefreshing(false);
-          hasLoadedOnceRef.current = true;
-          return;
-        }
         setMyUniversity(profile?.university ?? null);
         setMyDepartment(profile?.department ?? null);
         setMyBatch(profile?.graduation_year ?? null);

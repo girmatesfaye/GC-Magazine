@@ -32,6 +32,19 @@ function truncateText(text: string, limit: number) {
   return `${compact.slice(0, Math.max(0, limit - 3)).trimEnd()}...`;
 }
 
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "GM";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function MemoryCard({
   memory,
   onPress,
@@ -46,6 +59,7 @@ export function MemoryCard({
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [playBusy, setPlayBusy] = useState(false);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -61,6 +75,10 @@ export function MemoryCard({
   useEffect(() => {
     setImageLoadFailed(false);
   }, [memory.imageUri]);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [memory.avatarUri]);
 
   const handleDelete = (e: GestureResponderEvent) => {
     e.stopPropagation();
@@ -128,6 +146,7 @@ export function MemoryCard({
   const endWordsPreview = endWordsSource
     ? truncateText(endWordsSource, variant === "feed" ? 120 : 95)
     : "";
+  const avatarInitials = getInitials(memory.authorName);
 
   return (
     <Pressable
@@ -137,11 +156,20 @@ export function MemoryCard({
     >
       <View className="mb-4 flex-row items-center gap-3 px-2">
         <View className="h-12 w-12 overflow-hidden rounded-full bg-surface-container-highest">
-          <Image
-            source={{ uri: memory.avatarUri }}
-            className="h-full w-full"
-            resizeMode="cover"
-          />
+          {!memory.avatarUri || avatarLoadFailed ? (
+            <View className="h-full w-full items-center justify-center bg-surface-container-low">
+              <Text className="font-headline text-sm font-black tracking-tight text-primary">
+                {avatarInitials}
+              </Text>
+            </View>
+          ) : (
+            <Image
+              source={{ uri: memory.avatarUri }}
+              className="h-full w-full"
+              resizeMode="cover"
+              onError={() => setAvatarLoadFailed(true)}
+            />
+          )}
         </View>
         <View>
           <Text className="font-headline text-base font-bold leading-tight text-primary">

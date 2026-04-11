@@ -1,24 +1,31 @@
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MemoryCard } from "@/components/memory-card";
 import { PrimaryButton } from "@/components/primary-button";
-import { SecondaryButton } from "@/components/secondary-button";
 import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { fetchMemories } from "@/lib/memories";
-import { fetchCurrentProfile } from "@/lib/profiles";
 import { supabase } from "@/lib/supabase";
 import type { Memory } from "@/types/memory";
 
 export default function AdminScreen() {
-  const [adminLabel, setAdminLabel] = useState("Verifying admin access...");
+  const navigation = useNavigation();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace("/home");
+  };
 
   const loadAdminData = useCallback(async (silent = false) => {
     if (silent) {
@@ -29,16 +36,8 @@ export default function AdminScreen() {
     setLoadError(null);
 
     try {
-      const [profile, memoryList] = await Promise.all([
-        fetchCurrentProfile(),
-        fetchMemories(),
-      ]);
+      const memoryList = await fetchMemories();
 
-      setAdminLabel(
-        profile?.is_admin
-          ? `Signed in as ${profile.full_name ?? "admin"}. You can delete posts below.`
-          : "Admin access is not enabled for this account.",
-      );
       setMemories(memoryList);
     } catch (error) {
       const message =
@@ -96,8 +95,14 @@ export default function AdminScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
+      <View className="border-b border-outline-variant/10 bg-surface/95 px-6 pt-4 pb-4">
+        <Text className="mb-3 font-headline text-2xl font-black tracking-tight text-primary-container">
+          Admin Center
+        </Text>
+        <PrimaryButton label="Back" onPress={handleBack} />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-10"
+        className="flex-1 px-6 pt-6"
         contentContainerClassName="gap-6 pb-24"
         contentInsetAdjustmentBehavior="automatic"
         refreshControl={
@@ -108,21 +113,6 @@ export default function AdminScreen() {
           />
         }
       >
-        <Text className="font-headline text-4xl font-black tracking-tight text-primary-container">
-          Admin Tools
-        </Text>
-        <Text className="font-body text-base leading-relaxed text-on-surface-variant">
-          Admin access is tied to your account profile. Delete posts directly
-          from this moderation list.
-        </Text>
-        <View className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-4">
-          <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-primary">
-            Access
-          </Text>
-          <Text className="mt-2 font-body text-sm text-on-surface-variant">
-            {adminLabel}
-          </Text>
-        </View>
         {loading ? (
           <View className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-4">
             <Text className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
@@ -152,14 +142,6 @@ export default function AdminScreen() {
             }
           />
         ))}
-        <PrimaryButton
-          label="Back to Home"
-          onPress={() => router.replace("/home")}
-        />
-        <SecondaryButton
-          label="Go to Profile"
-          onPress={() => router.push("/profile")}
-        />
       </ScrollView>
     </SafeAreaView>
   );

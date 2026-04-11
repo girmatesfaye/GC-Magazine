@@ -115,15 +115,17 @@ function resolveAuthStorage(): ResolvedAuthStorage {
 
 const authStorage = resolveAuthStorage();
 
-export const supabase = createClient(
-  supabaseUrl ?? "https://placeholder.supabase.co",
-  supabaseAnonKey ?? "placeholder-anon-key",
-  {
-    auth: {
-      storage: authStorage.storage,
-      autoRefreshToken: authStorage.persistent,
-      persistSession: authStorage.persistent,
-      detectSessionInUrl: false,
-    },
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Missing Supabase configuration. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env.",
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: authStorage.storage,
+    autoRefreshToken: authStorage.persistent,
+    persistSession: authStorage.persistent,
+    detectSessionInUrl: false,
   },
-);
+});

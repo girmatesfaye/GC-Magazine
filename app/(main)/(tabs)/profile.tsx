@@ -13,9 +13,6 @@ import { uploadProfileAvatar } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import type { Memory } from "@/types/memory";
 
-const AVATAR =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuC5mO7GArcByAeXNz-sZ1-AMeU53V4H6qnZMAAzif-HqYGpQH9sisieHwLQeDX0iDxwSVmaG17bqwKXmz5fIlCk0Ga8CGq2ojNFhZDdBBxRmUi0PhclcW8MC2cwIoO1fPxjqLot4xAVQYrJZKKUO62ZfUf8RyqJ1kdEw9XPM34V7XkVFPVaMyptlzoKNvgZinOmrp4tpbzzCpIn6JA83McF1sjPVOCaMX9YRET3b8yKCsMaQi8fDOmDXqbXQN7VJExQzYJfRDYQA5OD";
-
 function formatArchiveDate(createdAt?: string) {
   if (!createdAt) {
     return "Unknown date";
@@ -33,11 +30,24 @@ function formatArchiveDate(createdAt?: string) {
   }).format(parsed);
 }
 
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "GM";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export default function ProfileScreen() {
   const [fullName, setFullName] = useState("");
   const [metaLine, setMetaLine] = useState("");
   const [university, setUniversity] = useState("");
-  const [avatarUri, setAvatarUri] = useState(AVATAR);
+  const [avatarUri, setAvatarUri] = useState("");
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [archive, setArchive] = useState<Memory[]>([]);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -75,14 +85,11 @@ export default function ProfileScreen() {
       const safeYear = profile.graduation_year?.trim() || "";
       const nextMeta = `${safeDepartment}${safeYear ? ` ${safeYear}` : ""}`;
       const safeUniversity = profile.university?.trim() || "University not set";
-      const nextAvatar =
-        profile.avatar_url ??
-        `https://api.dicebear.com/9.x/initials/png?seed=${encodeURIComponent(safeName)}`;
 
       setFullName(safeName);
       setMetaLine(nextMeta);
       setUniversity(safeUniversity);
-      setAvatarUri(nextAvatar);
+      setAvatarUri(profile.avatar_url ?? "");
       setProfileId(profile.id);
 
       try {
@@ -134,6 +141,8 @@ export default function ProfileScreen() {
   useEffect(() => {
     setAvatarLoadFailed(false);
   }, [avatarUri]);
+
+  const avatarInitials = getInitials(fullName || "GradEcho Member");
 
   const totalMemories = archive.length;
   const totalVoiceMemories = useMemo(
@@ -254,9 +263,11 @@ export default function ProfileScreen() {
           <View className="relative">
             <View className="h-20 w-20 overflow-hidden rounded-full border-2 border-primary-container p-0.5">
               <View className="h-full w-full overflow-hidden rounded-full border-2 border-surface">
-                {avatarLoadFailed ? (
+                {!avatarUri || avatarLoadFailed ? (
                   <View className="h-full w-full items-center justify-center bg-surface-container-low">
-                    <Ionicons name="person" size={30} color="#fff6df" />
+                    <Text className="font-headline text-xl font-black tracking-tight text-primary">
+                      {avatarInitials}
+                    </Text>
                   </View>
                 ) : (
                   <Image

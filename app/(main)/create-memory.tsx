@@ -26,9 +26,6 @@ import { PrimaryButton } from "@/components/primary-button";
 import { isAuthExpiredErrorMessage } from "@/lib/auth-errors";
 import { uploadMemoryAudio, uploadMemoryImage } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
-
-const USER_AVATAR =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAH2kjIoZLn6ZXpKx6f3Mmfx0sclCivIJdkRXHOAUqtqL-vGa-VmQhhpyrxVhrQ4Uldi3Aw2pKNOZVmC3UX-a_59oQRx0Ue8JewbVw-Xra6t3_nvTH2505UsDjN6-xrkebk7CSCF5bjMTN4IqapIiZw6Dw_dUl_HiXSv1IVptje0t_m05CS-ivDVFxy-NWBdXlKUI5v_WCtSUpPxp8N_ozGErVcZhLwq1moW7HW4pJWkg8zPamp_BfBVESacvtXVimMbfwUs1VhdxtK";
 const TITLE_CHAR_LIMIT = 260;
 const END_WORDS_CHAR_LIMIT = 600;
 
@@ -311,12 +308,8 @@ export default function CreateMemoryScreen() {
               GC Magazine
             </Text>
           </View>
-          <View className="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/20">
-            <Image
-              source={{ uri: USER_AVATAR }}
-              className="h-full w-full"
-              contentFit="cover"
-            />
+          <View className="h-10 w-10 items-center justify-center rounded-full border border-primary-container/30 bg-surface-container-low">
+            <Ionicons name="person" size={18} color="#fff6df" />
           </View>
         </View>
         <ScrollView
