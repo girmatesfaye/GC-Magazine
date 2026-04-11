@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -20,8 +19,6 @@ import {
 import { PrimaryButton } from "@/components/primary-button";
 import { SecondaryButton } from "@/components/secondary-button";
 import { supabase } from "@/lib/supabase";
-
-const BG = require("../assets/stitch/user-setup.png");
 
 export default function UserSetupScreen() {
   const insets = useSafeAreaInsets();
@@ -79,10 +76,6 @@ export default function UserSetupScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={["top", "bottom"]}>
-      <View className="absolute inset-0">
-        <Image source={BG} className="h-full w-full" contentFit="cover" />
-        <View className="absolute inset-0 bg-surface/78" />
-      </View>
       {/* <View className="z-10 flex-row items-center justify-between bg-surface/60 px-6 py-4">
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Ionicons name="arrow-back" size={24} color="#ffd700" />
