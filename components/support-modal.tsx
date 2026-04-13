@@ -1,4 +1,5 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Alert, Linking, Modal, Pressable, Text, View } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -7,6 +8,14 @@ type Props = {
 };
 
 export function SupportModal({ visible, onClose, onConfirm }: Props) {
+  const handleOpenTelegram = async () => {
+    try {
+      await Linking.openURL("https://t.me/girma_thoughts");
+    } catch {
+      Alert.alert("Could not open Telegram", "Please try again in a moment.");
+    }
+  };
+
   return (
     <Modal
       transparent
@@ -37,6 +46,17 @@ export function SupportModal({ visible, onClose, onConfirm }: Props) {
             >
               <Text className="font-label text-base font-medium text-primary">
                 Cancel
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                void handleOpenTelegram();
+              }}
+              className="h-12 flex-row items-center justify-center gap-2 rounded-full border border-outline-variant/30 bg-surface"
+            >
+              <Ionicons name="paper-plane-outline" size={18} color="#8b7f59" />
+              <Text className="font-label text-base font-medium text-primary">
+                Telegram
               </Text>
             </Pressable>
           </View>
