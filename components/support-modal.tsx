@@ -41,14 +41,6 @@ export function SupportModal({ visible, onClose, onConfirm }: Props) {
               </Text>
             </Pressable>
             <Pressable
-              onPress={onClose}
-              className="h-12 items-center justify-center rounded-full border border-outline-variant/30 bg-surface"
-            >
-              <Text className="font-label text-base font-medium text-primary">
-                Cancel
-              </Text>
-            </Pressable>
-            <Pressable
               onPress={() => {
                 void handleOpenTelegram();
               }}
@@ -57,6 +49,14 @@ export function SupportModal({ visible, onClose, onConfirm }: Props) {
               <Ionicons name="paper-plane-outline" size={18} color="#8b7f59" />
               <Text className="font-label text-base font-medium text-primary">
                 Telegram
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={onClose}
+              className="h-12 items-center justify-center rounded-full border border-outline-variant/30 bg-surface"
+            >
+              <Text className="font-label text-base font-medium text-primary">
+                Cancel
               </Text>
             </Pressable>
           </View>
