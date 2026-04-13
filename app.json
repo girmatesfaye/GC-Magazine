@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gcmagazine",
+    "name": "GC Magazine",
     "slug": "gcmagazine",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,9 +30,7 @@
       "output": "static",
       "favicon": "./assets/images/icon.png"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "plugins": [
       "expo-router",
       [
